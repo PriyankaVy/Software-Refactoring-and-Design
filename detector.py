@@ -71,7 +71,7 @@ class CodeSmellDetector:
                         #print(variables)
                         if self.detect_long_parameter_list_methods(node):
                             long_parameter_list_methods.append((node.name, len(node.args.args)))
-                        if self.detect_long_methods(node):
+                        if self.detect_long_methods(code, node):
                             long_methods.append(node.name)
 
                 code_clone = self.detect_code_clone(code_fragments)
@@ -98,10 +98,12 @@ class CodeSmellDetector:
             traceback.print_exc()
             self.show_message(f"An error occurred while analyzing the code: {str(e)}")
 
-    def detect_long_methods(self, node):
+    def detect_long_methods(self, code, node):
         start_line = node.lineno
         end_line = node.end_lineno
-        return (end_line - start_line) > METHOD_LENGTH_THRESHOLD
+        code_lines = code.split('\n')[start_line - 1:end_line]
+        non_empty_lines = [line for line in code_lines if line.strip()]
+        return len(non_empty_lines) > METHOD_LENGTH_THRESHOLD
 
     def detect_long_parameter_list_methods(self, node):
         return len(node.args.args) > PARAMETER_LIST_THRESHOLD
